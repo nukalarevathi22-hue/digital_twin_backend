@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<febio_spec version="4.0">
+<Module type="solid"/>
+
+<Control>
+    <title>Simple Cube Test</title>
+    <time_steps>10</time_steps>
+    <step_size>0.1</step_size>
+    <analysis>static</analysis>
+    <plot_level>PLOT_MAJOR_ITRS</plot_level>
+    <plot_zero_state>1</plot_zero_state>
+</Control>
+
+<Material>
+    <material id="1" name="soft_material" type="neo-Hookean">
+        <E>10.0</E>
+        <v>0.3</v>
+    </material>
+</Material>
+
+<Geometry>
+    <!-- Simple cube geometry -->
+    <Nodes>
+        <node id="1">0, 0, 0</node>
+        <node id="2">1, 0, 0</node>
+        <node id="3">1, 1, 0</node>
+        <node id="4">0, 1, 0</node>
+        <node id="5">0, 0, 1</node>
+        <node id="6">1, 0, 1</node>
+        <node id="7">1, 1, 1</node>
+        <node id="8">0, 1, 1</node>
+    </Nodes>
+    
+    <!-- Single hex element -->
+    <Elements type="solid" mat="1">
+        <hex8 id="1">1, 2, 3, 4, 5, 6, 7, 8</hex8>
+    </Elements>
+    
+    <Surface name="fixed_face">
+        <quad4 id="1">1, 2, 3, 4</quad4>
+    </Surface>
+    
+    <Surface name="loaded_face">
+        <quad4 id="1">5, 6, 7, 8</quad4>
+    </Surface>
+</Geometry>
+
+<Boundary>
+    <fix bc="x,y,z">
+        <surface>fixed_face</surface>
+    </fix>
+</Boundary>
+
+<Loads>
+    <loadcurve id="1" type="linear">
+        <loadpoint>0, 0</loadpoint>
+        <loadpoint>1, 1</loadpoint>
+    </loadcurve>
+    
+    <pressure type="linear">
+        <surface>loaded_face</surface>
+        <scale>5.0</scale>
+        <lc>1</lc>
+    </pressure>
+</Loads>
+
+<Output>
+    <plotfile type="febio">
+        <var type="displacement"/>
+        <var type="stress"/>
+        <var type="strain"/>
+    </plotfile>
+</Output>
+</febio_spec>

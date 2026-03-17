@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Blog - VirtuHeart</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body, html {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      height: 100%;
+      background-color: #25a59a;
+      position: relative;
+      overflow-x: hidden;
+      z-index: 0;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('https://images.unsplash.com/photo-1580281657527-cee3fe3ff8a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80') center center / cover no-repeat;
+      opacity: 0.15;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      color: white;
+      font-weight: 700;
+      font-size: 22px;
+    }
+
+    header .logo {
+      color: white;
+    }
+
+    header .logo .orange {
+      color: #fa7f33;
+    }
+
+    header nav a {
+      color: white;
+      margin-left: 30px;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 16px;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    header nav a:hover {
+      color: #fa7f33;
+    }
+
+    header .contact-btn {
+      background-color: #fa7f33;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 5px;
+      font-weight: 600;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-size: 16px;
+    }
+
+    header .contact-btn:hover {
+      background-color: #d96a00;
+    }
+
+    /* Blog Page Specific Styles */
+    .blog-hero {
+      text-align: center;
+      padding: 80px 0 40px;
+      color: white;
+    }
+
+    .blog-hero h1 {
+      font-size: 48px;
+      font-weight: 900;
+      margin-bottom: 20px;
+    }
+
+    .blog-hero p {
+      font-size: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+      color: #d1f0ef;
+      line-height: 1.6;
+    }
+
+    .blog-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 40px;
+      margin: 60px 0;
+      perspective: 1000px;
+    }
+
+    .blog-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      overflow: hidden;
+      transition: all 0.5s ease;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      position: relative;
+      transform-style: preserve-3d;
+      cursor: pointer;
+    }
+
+    .blog-card:hover {
+      transform: translateY(-20px) rotateX(5deg);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .blog-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(250, 127, 51, 0.1), rgba(37, 165, 154, 0.1));
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .blog-card:hover::before {
+      opacity: 1;
+    }
+
+    .blog-image {
+      height: 220px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .blog-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.8s ease;
+    }
+
+    .blog-card:hover .blog-image img {
+      transform: scale(1.1);
+    }
+
+    .blog-category {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: #fa7f33;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      z-index: 2;
+    }
+
+    .blog-content {
+      padding: 25px;
+      color: white;
+      position: relative;
+      z-index: 2;
+    }
+
+    .blog-content h3 {
+      font-size: 22px;
+      margin-bottom: 15px;
+      line-height: 1.4;
+      transition: color 0.3s ease;
+    }
+
+    .blog-card:hover .blog-content h3 {
+      color: #fa7f33;
+    }
+
+    .blog-content p {
+      color: #d1f0ef;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      font-size: 15px;
+    }
+
+    .blog-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 14px;
+      color: #d1f0ef;
+    }
+
+    .blog-author {
+      display: flex;
+      align-items: center;
+    }
+
+    .author-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #fa7f33;
+      margin-right: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: white;
+    }
+
+    .read-more {
+      color: #fa7f33;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      transition: transform 0.3s ease;
+    }
+
+    .blog-card:hover .read-more {
+      transform: translateX(5px);
+    }
+
+    .read-more::after {
+      content: "→";
+      margin-left: 5px;
+      transition: transform 0.3s ease;
+    }
+
+    .blog-card:hover .read-more::after {
+      transform: translateX(3px);
+    }
+
+    /* Floating elements */
+    .floating-elements {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .floating-element {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      animation: float-element 15s infinite linear;
+    }
+
+    @keyframes float-element {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      33% { transform: translate(30px, -50px) rotate(120deg); }
+      66% { transform: translate(-20px, 20px) rotate(240deg); }
+      100% { transform: translate(0, 0) rotate(360deg); }
+    }
+
+    .floating-element:nth-child(1) {
+      width: 80px; height: 80px;
+      top: 10%; left: 10%;
+      animation-duration: 20s;
+    }
+    .floating-element:nth-child(2) {
+      width: 60px; height: 60px;
+      top: 70%; left: 80%;
+      animation-duration: 15s;
+    }
+    .floating-element:nth-child(3) {
+      width: 40px; height: 40px;
+      top: 40%; left: 85%;
+      animation-duration: 25s;
+    }
+    .floating-element:nth-child(4) {
+      width: 70px; height: 70px;
+      top: 80%; left: 20%;
+      animation-duration: 18s;
+    }
+
+    /* Newsletter Section */
+    .newsletter {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 50px;
+      text-align: center;
+      margin: 80px 0;
+      color: white;
+    }
+
+    .newsletter h2 {
+      font-size: 32px;
+      margin-bottom: 15px;
+    }
+
+    .newsletter p {
+      color: #d1f0ef;
+      margin-bottom: 30px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .newsletter-form {
+      display: flex;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .newsletter-form input {
+      flex: 1;
+      padding: 15px 20px;
+      border: none;
+      border-radius: 8px 0 0 8px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .newsletter-form button {
+      background: #fa7f33;
+      color: white;
+      border: none;
+      padding: 15px 25px;
+      border-radius: 0 8px 8px 0;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .newsletter-form button:hover {
+      background: #d96a00;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 40px 0;
+      color: white;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      margin-top: 60px;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-bottom: 20px;
+    }
+
+    .footer-links a {
+      color: white;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .footer-links a:hover {
+      color: #fa7f33;
+    }
+
+    @media (max-width: 768px) {
+      .blog-hero h1 {
+        font-size: 36px;
+      }
+      .blog-grid {
+        grid-template-columns: 1fr;
+      }
+      .newsletter-form {
+        flex-direction: column;
+      }
+      .newsletter-form input {
+        border-radius: 8px;
+        margin-bottom: 10px;
+      }
+      .newsletter-form button {
+        border-radius: 8px;
+      }
+      header nav a {
+        margin-left: 15px;
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="floating-elements">
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+  </div>
+
+  <div class="container">
+    <header>
+      <div class="logo">Virtu<span class="orange">Heart</span></div>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/about">About Us</a>
+        <a href="/services">Services</a>
+        <a href="/pages">Pages</a>
+        <a href="/blog">Blog</a>
+        <a href="/login">Login</a>
+        <a href="/contact">Contact Us</a>
+      </nav>
+      <button class="contact-btn">Contact Us</button>
+    </header>
+
+    <section class="blog-hero">
+      <h1>VirtuHeart Blog</h1>
+      <p>Insights, updates, and stories about digital heart health innovation</p>
+    </section>
+
+    <div class="blog-grid">
+      <!-- Blog Post 1 -->
+      <div class="blog-card">
+        <div class="blog-image">
+          <img src="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80" alt="Digital Heart Technology">
+          <div class="blog-category">Technology</div>
+        </div>
+        <div class="blog-content">
+          <h3>How Digital Twins Are Revolutionizing Cardiac Care</h3>
+          <p>Discover how creating virtual replicas of patient hearts is transforming diagnosis, treatment, and monitoring of cardiovascular conditions.</p>
+          <div class="blog-meta">
+            <div class="blog-author">
+              <div class="author-avatar">DC</div>
+              <span>Dr. Sarah Chen</span>
+            </div>
+            <span>May 15, 2025</span>
+          </div>
+          <a href="#" class="read-more">Read More</a>
+        </div>
+      </div>
+
+      <!-- Blog Post 2 -->
+      <div class="blog-card">
+        <div class="blog-image">
+          <img src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?ixlib=rb-4.0.3&auto=format&fit=crop&w=1480&q=80" alt="Heart Monitoring">
+          <div class="blog-category">Patient Care</div>
+        </div>
+        <div class="blog-content">
+          <h3>5 Ways Our Patients Are Using Digital Heart Monitoring</h3>
+          <p>Real stories from patients who have transformed their heart health management with our digital twin technology.</p>
+          <div class="blog-meta">
+            <div class="blog-author">
+              <div class="author-avatar">MR</div>
+              <span>Michael Rodriguez</span>
+            </div>
+            <span>April 22, 2025</span>
+          </div>
+          <a href="#" class="read-more">Read More</a>
+        </div>
+      </div>
+
+      <!-- Blog Post 3 -->
+      <div class="blog-card">
+        <div class="blog-image">
+          <img src="https://images.unsplash.com/photo-1582719471384-894fbb16e074?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80" alt="AI in Healthcare">
+          <div class="blog-category">Innovation</div>
+        </div>
+        <div class="blog-content">
+          <h3>The Role of AI in Predicting Heart Failure Events</h3>
+          <p>Learn how our machine learning algorithms analyze patterns to provide early warnings for potential cardiac events.</p>
+          <div class="blog-meta">
+            <div class="blog-author">
+              <div class="author-avatar">JW</div>
+              <span>Dr. James Wilson</span>
+            </div>
+            <span>March 30, 2025</span>
+          </div>
+          <a href="#" class="read-more">Read More</a>
+        </div>
+      </div>
+
+      <!-- Blog Post 4 -->
+      <div class="blog-card">
+        <div class="blog-image">
+          <img src="https://images.unsplash.com/photo-1551601651-2a8555f1a136?ixlib=rb-4.0.3&auto=format&fit=crop&w=1632&q=80" alt="3D Visualization">
+          <div class="blog-category">Technology</div>
+        </div>
+        <div class="blog-content">
+          <h3>Behind the Scenes: Creating 3D Heart Models from Medical Imaging</h3>
+          <p>A technical deep dive into how we transform MRI and CT scans into interactive, accurate 3D heart models.</p>
+          <div class="blog-meta">
+            <div class="blog-author">
+              <div class="author-avatar">MR</div>
+              <span>Michael Rodriguez</span>
+            </div>
+            <span>March 12, 2025</span>
+          </div>
+          <a href="#" class="read-more">Read More</a>
+        </div>
+      </div>
+
+      <!-- Blog Post 5 -->
+      <div class="blog-card">
+        <div class="blog-image">
+          <img src="https://images.unsplash.com/photo-1554734867-bf3c00a49371?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80" alt="Patient Story">
+          <div class="blog-category">Patient Story</div>
+        </div>
+        <div class="blog-content">
+          <h3>Living with CHF: How Digital Monitoring Changed My Life</h3>
+          <p>A heartfelt account from a patient managing chronic heart failure with the help of our digital twin platform.</p>
+          <div class="blog-meta">
+            <div class="blog-author">
+              <div class="author-avatar">PT</div>
+              <span>Patient Testimonial</span>
+            </div>
+            <span>February 28, 2025</span>
+          </div>
+          <a href="#" class="read-more">Read More</a>
+        </div>
+      </div>
+
+      <!-- Blog Post 6 -->
+      <div class="blog-card">
+        <div class="blog-image">
+          <img src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80" alt="Future of Medicine">
+          <div class="blog-category">Future</div>
+        </div>
+        <div class="blog-content">
+          <h3>The Future of Personalized Medicine: Digital Twins Beyond Cardiology</h3>
+          <p>Exploring how digital twin technology could expand to other medical specialties and transform healthcare.</p>
+          <div class="blog-meta">
+            <div class="blog-author">
+              <div class="author-avatar">DC</div>
+              <span>Dr. Sarah Chen</span>
+            </div>
+            <span>February 15, 2025</span>
+          </div>
+          <a href="#" class="read-more">Read More</a>
+        </div>
+      </div>
+    </div>
+
+    <section class="newsletter">
+      <h2>Stay Updated with VirtuHeart</h2>
+      <p>Subscribe to our newsletter for the latest insights on digital heart health, technology updates, and patient stories.</p>
+      <form class="newsletter-form">
+        <input type="email" placeholder="Enter your email address" required>
+        <button type="submit">Subscribe</button>
+      </form>
+    </section>
+
+    <footer>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="services.html">Services</a>
+        <a href="blog.html">Blog</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+      </div>
+      <p>&copy; 2025 VirtuHeart. All rights reserved.</p>
+    </footer>
+  </div>
+
+  <script>
+    // Enhanced hover effects with parallax
+    document.addEventListener('DOMContentLoaded', function() {
+      const blogCards = document.querySelectorAll('.blog-card');
+      
+      blogCards.forEach(card => {
+        card.addEventListener('mousemove', function(e) {
+          const cardRect = this.getBoundingClientRect();
+          const x = e.clientX - cardRect.left;
+          const y = e.clientY - cardRect.top;
+          
+          const centerX = cardRect.width / 2;
+          const centerY = cardRect.height / 2;
+          
+          const angleY = (x - centerX) / 25;
+          const angleX = (centerY - y) / 25;
+          
+          this.style.transform = `perspective(1000px) rotateX(${angleX}deg) rotateY(${angleY}deg) translateY(-20px)`;
+        });
+        
+        card.addEventListener('mouseleave', function() {
+          this.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
+        });
+      });
+      
+      // Add floating animation to cards with delays
+      blogCards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+      });
+    });
+  </script>
+</body>
+</html>

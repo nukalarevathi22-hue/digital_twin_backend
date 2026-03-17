@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: digital-twin-backend
+    runtime: docker
+    region: oregon
+    plan: free
+    healthCheckPath: /api/test
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: FITBIT_CLIENT_ID
+        scope: run
+      - key: FITBIT_CLIENT_SECRET
+        scope: run
+      - key: FITBIT_REDIRECT_URI
+        scope: run

@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Real-time Heart Monitor - VirtuHeart</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body, html {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      height: 100%;
+      background: linear-gradient(135deg, #1a2a6c, #25a59a, #fdbb2d);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .monitor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      color: white;
+      margin-bottom: 20px;
+    }
+
+    .logo {
+      font-size: 28px;
+      font-weight: 900;
+    }
+
+    .logo .orange {
+      color: #fa7f33;
+    }
+
+    .patient-info {
+      text-align: right;
+    }
+
+    .patient-name {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .patient-id {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    /* Main Content Grid */
+    .monitor-content {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+      flex: 1;
+      height: calc(100vh - 120px);
+    }
+
+    /* 3D Visualization Panel */
+    .visualization-panel {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      color: white;
+    }
+
+    .panel-header h2 {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .visualization-controls {
+      display: flex;
+      gap: 10px;
+    }
+
+    .control-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 12px;
+    }
+
+    .control-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .control-btn.active {
+      background: #fa7f33;
+    }
+
+    #heart-container {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 15px;
+      position: relative;
+      overflow: hidden;
+      cursor: grab;
+    }
+
+    #heart-container:active {
+      cursor: grabbing;
+    }
+
+    .loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 18px;
+    }
+
+    .visualization-stats {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+      color: white;
+      font-size: 14px;
+    }
+
+    /* Anatomy Legend */
+    .anatomy-legend {
+      position: absolute;
+      top: 80px;
+      right: 30px;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 11px;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .anatomy-legend h4 {
+      margin-bottom: 10px;
+      font-size: 12px;
+      color: #fa7f33;
+    }
+
+    .anatomy-item {
+      display: flex;
+      align-items: center;
+      margin: 4px 0;
+    }
+
+    .color-swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      margin-right: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    /* Data Panel */
+    .data-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Metrics Section */
+    .metrics-section {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 25px;
+      color: white;
+    }
+
+    .metrics-section h3 {
+      margin-bottom: 20px;
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .metric-card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .metric-card:hover {
+      transform: translateY(-5px);
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .metric-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .metric-value {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .metric-label {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-bottom: 2px;
+    }
+
+    .metric-unit {
+      font-size: 12px;
+      opacity: 0.6;
+    }
+
+    /* Smartwatch Controls */
+    .smartwatch-section {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 25px;
+      color: white;
+    }
+
+    .smartwatch-section h3 {
+      margin-bottom: 20px;
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .control-group {
+      margin-bottom: 20px;
+    }
+
+    .control-group label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+
+    #hr-slider {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.2);
+      outline: none;
+      appearance: none;
+    }
+
+    #hr-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fa7f33;
+      cursor: pointer;
+      border: 2px solid white;
+    }
+
+    .control-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .btn-primary, .btn-secondary, .btn-success {
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 14px;
+    }
+
+    .btn-primary {
+      background: #fa7f33;
+      color: white;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+
+    .btn-success {
+      background: #4ecdc4;
+      color: white;
+    }
+
+    .btn-primary:hover, .btn-secondary:hover, .btn-success:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-primary:disabled, .btn-secondary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .mock-data {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      padding: 15px;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      max-height: 100px;
+      overflow-y: auto;
+    }
+
+    .mock-data h4 {
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: #4ecdc4;
+    }
+
+    /* Alerts Section */
+    .alerts-section {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 25px;
+      color: white;
+    }
+
+    .alerts-section h3 {
+      margin-bottom: 15px;
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    #alerts-container {
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .alert {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 10px 15px;
+      margin-bottom: 10px;
+      border-left: 4px solid #fa7f33;
+      transition: all 0.3s ease;
+    }
+
+    .alert.critical {
+      border-left-color: #ff6b6b;
+      background: rgba(255, 107, 107, 0.1);
+    }
+
+    .alert.warning {
+      border-left-color: #ffd93d;
+      background: rgba(255, 217, 61, 0.1);
+    }
+
+    .alert.info {
+      border-left-color: #4ecdc4;
+      background: rgba(78, 205, 196, 0.1);
+    }
+
+    .alert-header {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 600;
+      margin-bottom: 5px;
+      font-size: 13px;
+    }
+
+    .alert-message {
+      font-size: 11px;
+      opacity: 0.8;
+      line-height: 1.4;
+    }
+
+    /* Connection Status */
+    .connection-status {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-size: 12px;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .connected { color: #4ecdc4; }
+    .disconnected { color: #ff6b6b; }
+
+    /* Instructions */
+    .instructions {
+      position: absolute;
+      bottom: 20px;
+      left: 30px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-size: 11px;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+      .monitor-content {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+      
+      .container {
+        height: auto;
+        min-height: 100vh;
+      }
+      
+      .anatomy-legend {
+        position: relative;
+        top: auto;
+        right: auto;
+        margin-top: 15px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .control-buttons {
+        grid-template-columns: 1fr;
+      }
+      
+      .visualization-controls {
+        flex-wrap: wrap;
+      }
+      
+      .panel-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+      }
+      
+      .instructions {
+        position: relative;
+        bottom: auto;
+        left: auto;
+        margin-top: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="monitor-header">
+      <div class="logo">Virtu<span class="orange">Heart</span> Monitor</div>
+      <div class="patient-info">
+        <div class="patient-name">John </div>
+        <div class="patient-id">ID: PATIENT_001</div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="monitor-content">
+      <!-- 3D Visualization Panel -->
+      <div class="visualization-panel">
+        <div class="panel-header">
+          <h2>3D Heart Digital Twin</h2>
+          <div class="visualization-controls">
+            <button class="control-btn" id="toggle-wireframe">Wireframe</button>
+            <button class="control-btn" id="toggle-heartbeat">Pause Beat</button>
+            <button class="control-btn" id="reset-view">Reset View</button>
+          </div>
+        </div>
+        
+        <div id="heart-container">
+          <div class="loading">Initializing 3D Heart Anatomy...</div>
+        </div>
+        
+        
+        
+        <div class="visualization-stats">
+          <span>Vertices: <span id="vertex-count">0</span></span>
+          <span>FPS: <span id="fps-counter">0</span></span>
+          <span>Last Update: <span id="last-update">Never</span></span>
+        </div>
+        
+        <!-- Instructions -->
+        <div class="instructions">
+          🖱️ Drag to rotate • Scroll to zoom • Click buttons for controls
+        </div>
+      </div>
+
+      <!-- Data Panel -->
+      <div class="data-panel">
+        <!-- Clinical Metrics -->
+        <div class="metrics-section">
+          <h3>Clinical Metrics</h3>
+          <div class="metrics-grid">
+            <div class="metric-card" id="heart-rate-card">
+              <div class="metric-icon">❤️</div>
+              <div class="metric-value" id="heart-rate">72</div>
+              <div class="metric-label">Heart Rate</div>
+              <div class="metric-unit">bpm</div>
+            </div>
+            <div class="metric-card" id="ef-card">
+              <div class="metric-icon">📊</div>
+              <div class="metric-value" id="ejection-fraction">58</div>
+              <div class="metric-label">Ejection Fraction</div>
+              <div class="metric-unit">%</div>
+            </div>
+            <div class="metric-card" id="co-card">
+              <div class="metric-icon">💨</div>
+              <div class="metric-value" id="cardiac-output">48</div>
+              <div class="metric-label">Cardiac Output</div>
+              <div class="metric-unit">L/min</div>
+            </div>
+            <div class="metric-card" id="status-card">
+              <div class="metric-icon">⚠️</div>
+              <div class="metric-value" id="clinical-status">Normal</div>
+              <div class="metric-label">Status</div>
+              <div class="metric-unit">Risk</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Smartwatch Controls -->
+        <div class="smartwatch-section">
+          <h3>Smartwatch Simulation</h3>
+          <div class="control-group">
+            <label for="hr-slider">Heart Rate: <span id="hr-value">72</span> bpm</label>
+            <input type="range" id="hr-slider" min="40" max="120" value="72" step="1">
+          </div>
+          <div class="control-buttons">
+            <button id="start-monitoring" class="btn-primary">Start Monitoring</button>
+            <button id="stop-monitoring" class="btn-secondary" disabled>Stop</button>
+            <button id="send-heartrate" class="btn-success">Send to Backend</button>
+          </div>
+          <div class="mock-data">
+            <h4>Real-time Data Stream</h4>
+            <div id="mock-data-stream">Waiting for data...</div>
+          </div>
+        </div>
+
+        <!-- Alerts Panel -->
+        <div class="alerts-section">
+          <h3>Alerts & Notifications</h3>
+          <div id="alerts-container">
+            <div class="alert info">
+              <div class="alert-header">
+                <span>System Ready</span>
+                <span>🟢</span>
+              </div>
+              <div class="alert-message">3D heart anatomy loaded. Ready for real-time monitoring.</div>
+            </div>
+            <div class="alert info">
+              <div class="alert-header">
+                <span>Anatomy Guide</span>
+                <span>💡</span>
+              </div>
+              <div class="alert-message">View different heart chambers using the anatomy legend.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Connection Status -->
+  <div class="connection-status">
+    WebSocket: <span id="ws-status" class="disconnected">Disconnected</span>
+  </div>
+
+  <script src="heart-visualization.js"></script>
+</body>
+</html>
+

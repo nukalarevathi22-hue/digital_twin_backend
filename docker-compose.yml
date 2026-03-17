@@ -1,0 +1,20 @@
+services:
+  backend:
+    build: .
+    container_name: digital_twin_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./uploads:/app/uploads
+      - ./chf_digital_twin.db:/app/chf_digital_twin.db
+      - ./chf_patients.db:/app/chf_patients.db
+    env_file: .env
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/test || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
