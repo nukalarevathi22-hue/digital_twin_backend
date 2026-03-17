@@ -3,6 +3,9 @@
 .env.local
 .env.*.local
 
+# Windows reserved device names (can't be tracked)
+con.py
+
 # Python
 __pycache__/
 *.py[cod]

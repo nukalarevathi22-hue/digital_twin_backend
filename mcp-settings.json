@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "render": {
+      "command": "python",
+      "args": ["mcp_render_server.py"],
+      "env": {
+        "RENDER_API_TOKEN": "rnd_VxDa8j5IVche8yepcnbq9zr4anHq"
+      }
+    }
+  }
+}
