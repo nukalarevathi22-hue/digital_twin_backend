@@ -32,8 +32,12 @@ COPY . /app
 # Create directories used at runtime
 RUN mkdir -p /app/uploads /app/data
 
-# Expose the port used by FastAPI
-EXPOSE 10000
+# Expose the port used by FastAPI (default)
+EXPOSE 8000
+
+# Use PORT env var so this works locally (default 8000) and on Render (sets $PORT)
+ENV PORT=8000
 
 # Default command - run the app using Uvicorn
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "10000", "--workers", "1"]
+# Render sets $PORT automatically; we fall back to the default when running locally.
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT} --workers 1"]

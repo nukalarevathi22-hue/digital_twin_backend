@@ -639,16 +639,7 @@ async def lifespan(app: FastAPI):
     print(f"   • Backend API: http://localhost:8000")
     print(f"   • Simulations API: http://localhost:8000/api/simulations")
     print(f"   • Test endpoint: http://localhost:8000/api/test")
-    print(f"\\n{'='*60}")
-    print(f"  🚀 CHF Digital Twin API - Production Ready")
-    print(f"  Version: 2.1 | Status: Ready for Render Deployment")
-    print(f"{'='*60}")
-    print(f"   • API Server: http://0.0.0.0:10000")
-    print(f"   • Frontend: http://0.0.0.0:10000/")
-    print(f"   • Health check: http://0.0.0.0:10000/health")
-    print(f"   • API Test: http://0.0.0.0:10000/api/test")
-    print(f"   • API Docs: http://0.0.0.0:10000/docs")
-    print(f"{'='*60}\\n")
+    print(f"   • Health check: http://localhost:8000/health")
     print("=" * 50)
     
     yield
@@ -666,25 +657,20 @@ app = FastAPI(
 )
 
 # ----------------------------
-# CORS middleware (PRODUCTION-READY)
+# CORS middleware (IMPROVED)
 # ----------------------------
-# Get allowed origins from environment or use defaults
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "").split(",") if os.getenv("ALLOWED_ORIGINS") else [
-    "https://digital-twin-backend-vfsn.onrender.com",  # Render production
-]
-
-# Add localhost for development
-if os.getenv("ENV", "production").lower() == "development":
-    allowed_origins.extend([
-        "http://localhost:10000",
-        "http://localhost:3000",
-        "http://127.0.0.1:10000",
-        "http://127.0.0.1:3000",
-    ])
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=[
+        "http://localhost:8000",
+        "http://localhost:5000",
+        "http://localhost:3000",
+        "http://127.0.0.1:8000",
+        "http://127.0.0.1:5000",
+        "http://127.0.0.1:3000",
+        "http://localhost",
+        "*"  # For development only
+    ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
@@ -776,7 +762,7 @@ async def test_backend():
         "status": "backend is running",
         "service": "CHF Digital Twin",
         "timestamp": datetime.now().isoformat(),
-        "port": 10000,
+        "port": 8000,
         "message": "✅ Backend is working correctly!",
         "endpoints": {
             "simulations": "/api/simulations",
@@ -784,15 +770,6 @@ async def test_backend():
             "debug": "/api/debug/simulations",
             "test": "/api/test"
         }
-    }
-
-@app.get("/health")
-async def health():
-    """Health check endpoint for load balancers and monitoring"""
-    return {
-        "status": "ok",
-        "service": "CHF Digital Twin",
-        "timestamp": datetime.now().isoformat()
     }
 
 from fastapi import UploadFile, File, Form

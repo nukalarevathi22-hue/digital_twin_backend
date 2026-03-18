@@ -4,14 +4,10 @@ services:
     runtime: docker
     region: oregon
     plan: free
-    healthCheckPath: /health
+    healthCheckPath: /api/test
     envVars:
       - key: PYTHONUNBUFFERED
         value: "1"
-      - key: ENV
-        value: production
-      - key: ALLOWED_ORIGINS
-        value: "https://digital-twin-backend-vfsn.onrender.com"
       - key: FITBIT_CLIENT_ID
         scope: run
       - key: FITBIT_CLIENT_SECRET
