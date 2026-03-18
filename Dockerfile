@@ -33,7 +33,7 @@ COPY . /app
 RUN mkdir -p /app/uploads /app/data
 
 # Expose the port used by FastAPI
-EXPOSE 8000
+EXPOSE 10000
 
 # Default command - run the app using Uvicorn
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "10000", "--workers", "1"]
