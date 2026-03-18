@@ -692,9 +692,15 @@ app.mount(
     name="static"
 )
 
+simulations_path = os.path.join(os.getcwd(), "simulations")
+
+if not os.path.exists(simulations_path):
+    print(f"⚠️ Creating missing directory: {simulations_path}")
+    os.makedirs(simulations_path, exist_ok=True)
+
 app.mount(
     "/simulations",
-    StaticFiles(directory="simulations"),
+    StaticFiles(directory=simulations_path),
     name="simulations"
 )
 
